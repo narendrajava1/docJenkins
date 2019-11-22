@@ -1,0 +1,111 @@
+################################Steps to configure SONAR with Maven####################################
+
+Below are the steps to integrate SONAR with maven build
+
+Install SONAR in your machine
+Add configuration in maven settings.xml
+Add configuration in project pom.xml
+Maven build with sonar:sonar option
+Check your SONAR dashboard
+
+Install Sonar
+Install SONAR in your machine and run SONAR server. Make sure http://localhost:9000 is accessible.
+Follow my another blog to install and run SONAR in your machine.
+Please note that the mentioned client configuration in this blog can be ignored.
+
+Add configuration in maven’s setting.xml
+Locate your maven’s settings.xml file and add the following configuration under <profiles> tag
+
+ 
+<profile>
+       <id>sonar</id>
+       <activation>
+            <activeByDefault>true</activeByDefault>
+       </activation>
+       <properties>
+           <sonar.host.url>
+                http://localhost:9000
+           </sonar.host.url>
+       </properties>
+</profile>
+
+Add configuration in project pom.xml
+Open the pom.xml file of your project and add the following properties to indicate your source and test folders
+
+<properties>
+	<sonar.sources>src/main</sonar.sources>
+        <sonar.tests>src/test</sonar.tests>
+</properties>
+
+Maven build with sonar:sonar option
+Add the following goal to run your build
+
+clean install sonar:sonar
+
+Check your SONAR dashboard
+Once the maven build is successful, the project will get visible in the SONAR dashboard as mentioned in my other blog.
+The URL to see SONAR dashboard is : http://localhost:9000/
+
+##############################Steps to integrate JaCoCo with SONAR#####################################3
+Below are the steps to integrate JaCoCo with SONAR
+
+Add JaCoCo configuration in project pom.xml
+Maven build with sonar:sonar option
+Check your SONAR dashboard
+
+Add JaCoCo configuration in project pom.xml
+Open the pom.xml file of your project and add the following properties to set some JaCoCo properties
+
+<properties>
+	<sonar.sources>src/main</sonar.sources>
+	<sonar.tests>src/test</sonar.tests>
+	<!-- Below property indicates the pattern of the test suite -->
+	<runSuite>**/*Suite.class</runSuite>
+	<!-- Sonar-JaCoCo properties -->
+	<sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
+	<sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
+	<sonar.jacoco.reportPath>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPath>
+	<sonar.language>java</sonar.language>
+</properties>
+
+Also add the following plugins to execute the test suite and execute the JaCoCo plugin during the maven build. 
+Please go through the inline comments for better understanding.
+
+<!-- Below plugin ensures the execution of test cases during maven build-->
+<plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-surefire-plugin</artifactId>
+	<configuration>
+		<includes>
+			<include>${runSuite}</include>
+		</includes>
+	</configuration>
+</plugin>
+
+<!-- Sonar-JaCoCo integration plugin -->
+<plugin>
+	<groupId>org.jacoco</groupId>
+	<artifactId>jacoco-maven-plugin</artifactId>
+	<version>0.7.6.201602180812</version>
+	<configuration>
+		<destFile>${sonar.jacoco.reportPath}</destFile>
+		<append>true</append>
+	</configuration>
+	<executions>
+		<execution>
+			<id>agent</id>
+			<goals>
+				<goal>prepare-agent</goal>
+			</goals>
+		</execution>
+	</executions>
+</plugin>
+
+Maven build with sonar:sonar option
+Add the same goal (as mentioned above) to generate code coverage report
+
+clean install sonar:sonar
+
+Check your SONAR dashboard for code coverage report
+
+
